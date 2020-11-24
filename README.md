@@ -6,8 +6,11 @@ doesn't include any css so you are responsibible for setting that up. So
 currently this plugin is mainly for theme developers (but see the
 section about _styling_ below if you still want to use it).
 
-##Licence
+## License
+
 This plugin is licensed under the MIT licence. See the LICENSE file for more info.
+
+## Usage
 
 The basic usage is:
 
