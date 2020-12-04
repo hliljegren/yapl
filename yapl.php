@@ -2,17 +2,17 @@
 /*
 Plugin Name: Y.A.P.L
 Description: Yet Another Post Lister, but bring your own css. This plugin creates a listing of any page type via the shortcode [yapl]. Normal usage is [yapl category="category" display_items="image,title,content"] but there are a lot of attributes you can set. See <a href="https://github.com/hliljegren/yapl">Readme</a> for documentation.
-Version: 0.8.4
+Version: 0.8.6
 Author: Håkan Liljegren
 */
-if (!function_exists('add_action')) {
-  die('You are trying to access this file in a manner not allowed.');
+if (!function_exists("add_action")) {
+  die("You are trying to access this file in a manner not allowed.");
 }
 
 function yapl_shortcode_handler($args, $content = null)
 {
   if (is_feed()) {
-    return '';
+    return "";
   }
   $flags = [
     "type" => "post",
@@ -110,31 +110,31 @@ function yapl_shortcode_handler($args, $content = null)
       }
     }
   }
-  $debug = '';
+  $debug = "";
   $displayItems = explode(",", $flags["display_items"]);
-  $current_post_id = get_queried_object_id();
-  $debug .= "<pre>Current post ID: " . $current_post_id . "</pre>";
+  $current_id = get_queried_object_id();
+  $debug .= "<pre>Current post ID: " . $current_id . "</pre>";
 
   /* Build query arguments */
   if ($flags["author"]) {
     if ($flags["author"] == "current") {
       global $current_user;
       wp_get_current_user();
-      $query_args['author'] = $current_user->ID;
+      $query_args["author"] = $current_user->ID;
     } else {
       $authors = explode(",", $flags["author"]);
       foreach ($authors as $author) {
         if (is_numeric($author)) {
-          if (isset($query_args['author'])) {
-            $query_args['author'] .= "," . $author;
+          if (isset($query_args["author"])) {
+            $query_args["author"] .= "," . $author;
           } else {
-            $query_args['author'] = $author;
+            $query_args["author"] = $author;
           }
         } else {
-          if (isset($query_args['author_name'])) {
-            $query_args['author_name'] .= "," . $author;
+          if (isset($query_args["author_name"])) {
+            $query_args["author_name"] .= "," . $author;
           }
-          $query_args['author_name'] = $author;
+          $query_args["author_name"] = $author;
         }
       }
     }
@@ -143,39 +143,39 @@ function yapl_shortcode_handler($args, $content = null)
     $categories = explode(",", $flags["category"]);
     foreach ($categories as $category) {
       if ($category == "_post_") {
-        $post_cat = get_the_terms($current_post_id, 'category');
-        $debug .= '<pre>Post categories:' . print_r($post_cat, true) . '</pre>';
+        $post_cat = get_the_terms($current_id, "category");
+        $debug .= "<pre>Post categories:" . print_r($post_cat, true) . "</pre>";
         if (is_array($post_cat)) {
           foreach ($post_cat as $pcat) {
-            $query_args['tax_query'][] = [
-              'taxonomy' => $pcat->taxonomy,
-              'field' => 'slug',
-              'terms' => $pcat->slug,
+            $query_args["tax_query"][] = [
+              "taxonomy" => $pcat->taxonomy,
+              "field" => "slug",
+              "terms" => $pcat->slug,
             ];
           }
         }
       } elseif (is_numeric($category)) {
-        $query_args['tax_query'][] = [
-          'taxonomy' => 'category',
-          'field' => 'id',
-          'terms' => $category,
+        $query_args["tax_query"][] = [
+          "taxonomy" => "category",
+          "field" => "id",
+          "terms" => $category,
         ];
       } else {
-        $query_args['tax_query'][] = [
-          'taxonomy' => 'category',
-          'field' => 'slug',
-          'terms' => $category,
+        $query_args["tax_query"][] = [
+          "taxonomy" => "category",
+          "field" => "slug",
+          "terms" => $category,
         ];
       }
     }
     if (
-      isset($query_args['tax_query']) &&
-      count($query_args['tax_query']) > 1
+      isset($query_args["tax_query"]) &&
+      count($query_args["tax_query"]) > 1
     ) {
       if ($flags["category_join"] == "and") {
-        $query_args['tax_query']['relation'] = "and";
+        $query_args["tax_query"]["relation"] = "and";
       } else {
-        $query_args['tax_query']['relation'] = "or";
+        $query_args["tax_query"]["relation"] = "or";
       }
     }
   }
@@ -183,23 +183,23 @@ function yapl_shortcode_handler($args, $content = null)
     $categories = explode(",", $flags["not_in_category"]);
     foreach ($categories as $category) {
       if (is_numeric($category)) {
-        $query_args['tax_query'][] = [
-          'taxonomy' => 'category',
-          'field' => 'id',
-          'terms' => $category,
-          'operator' => 'NOT IN',
+        $query_args["tax_query"][] = [
+          "taxonomy" => "category",
+          "field" => "id",
+          "terms" => $category,
+          "operator" => "NOT IN",
         ];
       } else {
-        $query_args['tax_query'][] = [
-          'taxonomy' => 'category',
-          'field' => 'slug',
-          'terms' => $category,
-          'operator' => 'NOT IN',
+        $query_args["tax_query"][] = [
+          "taxonomy" => "category",
+          "field" => "slug",
+          "terms" => $category,
+          "operator" => "NOT IN",
         ];
       }
     }
-    if (count($query_args['tax_query']) > 1) {
-      $query_args['tax_query']['relation'] = 'AND';
+    if (count($query_args["tax_query"]) > 1) {
+      $query_args["tax_query"]["relation"] = "AND";
     }
   }
   if ($flags["limit"]) {
@@ -220,12 +220,18 @@ function yapl_shortcode_handler($args, $content = null)
       $query_args["offset"] = $flags["offset"];
     }
   }
-  $query_args['post_type'] = explode(",", $flags["type"]);
-  if ($flags['post_id']) {
-    $query_args["post__in"] = explode(",", $flags['post_id']);
+  if ($flags["type"] == "subpages") {
+    // Special case: list subpages to current page
+    $query_args["post_parent"] = $current_id;
+    $query_args["post_type"] = get_post_type($current_id);
+  } else {
+    $query_args["post_type"] = explode(",", $flags["type"]);
   }
-  if ($flags['meta']) {
-    $metas = explode(",", $flags['meta']);
+  if ($flags["post_id"]) {
+    $query_args["post__in"] = explode(",", $flags["post_id"]);
+  }
+  if ($flags["meta"]) {
+    $metas = explode(",", $flags["meta"]);
     foreach ($metas as $meta) {
       $keyvalue = explode("|", $meta);
       if (count($keyvalue) == 3) {
@@ -262,8 +268,8 @@ function yapl_shortcode_handler($args, $content = null)
       }
     }
   } else {
-    $html = '';
-    $menu = '';
+    $html = "";
+    $menu = "";
     if ($flags["debug"]) {
       $debug .= "Using query args:<pre>";
       $debug .= print_r($query_args, true);
@@ -276,24 +282,28 @@ function yapl_shortcode_handler($args, $content = null)
       $result = ["posts" => $posts];
       return json_encode($result);
     }
+    // Exit early if we have no found posts
+    if (count($posts) == 0) {
+      // return "";
+    }
     foreach ($posts as $post) {
       // Skip if post is the current post
       $is_current = false;
-      if ($post->ID == $current_post_id) {
+      if ($post->ID == $current_id) {
         // continue;
         $is_current = true;
       }
       $customFields = get_post_custom($post->ID);
-      $post_html = '';
+      $post_html = "";
       if ($flags["debug"]) {
         $debug .=
-          'Customfields: <pre>' . print_r($customFields, true) . "</pre>";
+          "Customfields: <pre>" . print_r($customFields, true) . "</pre>";
       }
 
       foreach ($displayItems as $post_item) {
         if ($post_item == "title") {
           $post_html .=
-            '<' .
+            "<" .
             $flags["tag_title"] .
             ' class="' .
             $flags["class_title"] .
@@ -303,13 +313,13 @@ function yapl_shortcode_handler($args, $content = null)
           }
           $post_html .= $post->post_title;
           if ($flags["link_title"]) {
-            $post_html .= '</a>' . PHP_EOL;
+            $post_html .= "</a>" . PHP_EOL;
           }
-          $post_html .= '</' . $flags["tag_title"] . '>';
+          $post_html .= "</" . $flags["tag_title"] . ">";
         }
         if ($post_item == "image") {
           $post_html .=
-            '<' .
+            "<" .
             $flags["tag_image"] .
             ' class="' .
             $flags["class_image"] .
@@ -328,97 +338,97 @@ function yapl_shortcode_handler($args, $content = null)
             $post_html .= get_the_post_thumbnail($post->ID);
           }
           if ($flags["link_image"]) {
-            $post_html .= '</a>';
+            $post_html .= "</a>";
           }
-          $post_html .= '</' . $flags["tag_image"] . '>' . PHP_EOL;
+          $post_html .= "</" . $flags["tag_image"] . ">" . PHP_EOL;
         }
         if ($post_item == "date") {
           $post_html .=
-            '<' . $flags["tag_date"] . ' class="' . $flags["class_date"] . '">';
+            "<" . $flags["tag_date"] . ' class="' . $flags["class_date"] . '">';
           if ($flags["date_format"] == "split") {
             $post_html .=
-              '<' .
+              "<" .
               $flags["tag_date_part"] .
               ' class="' .
               $flags["class_date_part"] .
               'year">' .
               get_the_date("Y", $post) .
-              '</' .
+              "</" .
               $flags["tag_date_part"] .
-              '>';
+              ">";
             $post_html .=
-              '<' .
+              "<" .
               $flags["tag_date_part"] .
               ' class="' .
               $flags["class_date_part"] .
               'month">' .
               get_the_date("M", $post) .
-              '</' .
+              "</" .
               $flags["tag_date_part"] .
-              '>';
+              ">";
             $post_html .=
-              '<' .
+              "<" .
               $flags["tag_date_part"] .
               ' class="' .
               $flags["class_date_part"] .
               'day">' .
               get_the_date("d", $post) .
-              '</' .
+              "</" .
               $flags["tag_date_part"] .
-              '>';
+              ">";
             $post_html .=
-              '<' .
+              "<" .
               $flags["tag_date_part"] .
               ' class="' .
               $flags["class_date_part"] .
               'hour">' .
               get_the_date("H", $post) .
-              '</' .
+              "</" .
               $flags["tag_date_part"] .
-              '>';
+              ">";
             $post_html .=
-              '<' .
+              "<" .
               $flags["tag_date_part"] .
               ' class="' .
               $flags["class_date_part"] .
               'minute">' .
               get_the_date("m", $post) .
-              '</' .
+              "</" .
               $flags["tag_date_part"] .
-              '>';
+              ">";
             $post_html .=
-              '<' .
+              "<" .
               $flags["tag_date_part"] .
               ' class="' .
               $flags["class_date_part"] .
               'second">' .
               get_the_date("s", $post) .
-              '</' .
+              "</" .
               $flags["tag_date_part"] .
-              '>';
+              ">";
           } elseif ($flags["date_format"]) {
             $post_html .= get_the_date($flags["date_format"], $post);
           } else {
-            $post_html .= apply_filters('get_the_date', $post->post_date);
+            $post_html .= apply_filters("get_the_date", $post->post_date);
           }
-          $post_html .= '</' . $flags["tag_date"] . '>' . PHP_EOL;
+          $post_html .= "</" . $flags["tag_date"] . ">" . PHP_EOL;
         }
         if ($post_item == "author") {
           $post_html .=
-            '<' .
+            "<" .
             $flags["tag_author"] .
             ' class="' .
             $flags["class_author"] .
             '">' .
-            get_the_author_meta('user_nicename', $post->post_author) .
-            '</' .
+            get_the_author_meta("user_nicename", $post->post_author) .
+            "</" .
             $flags["tag_author"] .
-            '>' .
+            ">" .
             PHP_EOL;
         }
         if ($post_item == "content") {
           $post_html .=
-            '<' .
+            "<" .
             $flags["tag_content"] .
             ' class="' .
             $flags["class_content"] .
@@ -439,15 +449,15 @@ function yapl_shortcode_handler($args, $content = null)
             $content = wp_trim_words($content, $flags["max_words"]) . "…";
           }
           if ($flags["filter_content"]) {
-            $post_html .= apply_filters('the_content', $content);
+            $post_html .= apply_filters("the_content", $content);
           } else {
             $post_html .= $content;
           }
-          $post_html .= PHP_EOL . '</' . $flags["tag_content"] . '>' . PHP_EOL;
+          $post_html .= PHP_EOL . "</" . $flags["tag_content"] . ">" . PHP_EOL;
         }
         if ($post_item == "readmore") {
           $post_html .=
-            '<' .
+            "<" .
             $flags["tag_readmore"] .
             ' class="' .
             $flags["class_readmore"] .
@@ -456,15 +466,15 @@ function yapl_shortcode_handler($args, $content = null)
             get_permalink($post->ID) .
             '">' .
             $flags["label_readmore"] .
-            '</a>' .
-            '</' .
+            "</a>" .
+            "</" .
             $flags["tag_readmore"] .
-            '>' .
+            ">" .
             PHP_EOL;
         }
         if ($post_item == "comment_count") {
           $post_html .=
-            '<' .
+            "<" .
             $flags["tag_commentcount"] .
             ' class="' .
             $flags["class_commentcount"] .
@@ -484,14 +494,14 @@ function yapl_shortcode_handler($args, $content = null)
             );
           }
 
-          $post_html .= '</' . $flags["tag_commentcount"] . '>' . PHP_EOL;
+          $post_html .= "</" . $flags["tag_commentcount"] . ">" . PHP_EOL;
         }
         if ($post_item == "categories") {
           $categories = get_the_category($post->ID);
           if ($categories) {
             if ($flags["tag_category_wrap"]) {
               $post_html .=
-                '<' .
+                "<" .
                 $flags["tag_category_wrap"] .
                 ' class="' .
                 $flags["class_category_wrap"] .
@@ -506,7 +516,7 @@ function yapl_shortcode_handler($args, $content = null)
                 $post_html .= $flags["sep_categories"];
               }
               $post_html .=
-                '<' .
+                "<" .
                 $flags["tag_categories"] .
                 ' class="' .
                 $flags["class_categories"] .
@@ -517,12 +527,12 @@ function yapl_shortcode_handler($args, $content = null)
               }
               $post_html .= $category->cat_name;
               if ($flags["link_categories"]) {
-                $post_html .= '</a>' . PHP_EOL;
+                $post_html .= "</a>" . PHP_EOL;
               }
               $categorycount++;
             }
             if ($flags["tag_category_wrap"]) {
-              $post_html .= '</' . $flags["tag_category_wrap"] . '>';
+              $post_html .= "</" . $flags["tag_category_wrap"] . ">";
             }
           }
         }
@@ -531,7 +541,7 @@ function yapl_shortcode_handler($args, $content = null)
           if ($tags) {
             if ($flags["tag_tags_wrap"]) {
               $post_html .=
-                '<' .
+                "<" .
                 $flags["tag_tags_wrap"] .
                 ' class="' .
                 $flags["class_tags_wrap"] .
@@ -546,11 +556,11 @@ function yapl_shortcode_handler($args, $content = null)
                 $post_html .= $flags["sep_tags"];
               }
               $post_html .=
-                '<' .
+                "<" .
                 $flags["tag_tags"] .
                 ' class="' .
                 $flags["class_tags"] .
-                ' ' .
+                " " .
                 $tag->slug .
                 '">';
               if ($flags["link_tags"]) {
@@ -558,13 +568,13 @@ function yapl_shortcode_handler($args, $content = null)
               }
               $post_html .= $tag->name;
               if ($flags["link_tags"]) {
-                $post_html .= '</a>' . PHP_EOL;
+                $post_html .= "</a>" . PHP_EOL;
               }
-              $post_html .= '</' . $flags["tag_tags"] . '>';
+              $post_html .= "</" . $flags["tag_tags"] . ">";
               $tagcount++;
             }
             if ($flags["tag_tags_wrap"]) {
-              $post_html .= '</' . $flags["tag_tags_wrap"] . '>';
+              $post_html .= "</" . $flags["tag_tags_wrap"] . ">";
             }
           }
         }
@@ -573,36 +583,36 @@ function yapl_shortcode_handler($args, $content = null)
           $customClass = sanitize_title($customFields);
           if ($flags["tag_custom_wrap"]) {
             $post_html .=
-              '<' .
+              "<" .
               $flags["tag_custom_wrap"] .
               ' class="' .
               $flags["class_custom_wrap"] .
-              ' ' .
+              " " .
               $customClass .
               '">';
           }
           if ($flags["tag_custom_key"]) {
             $post_html .=
-              '<' .
+              "<" .
               $flags["tag_custom_key"] .
               ' class="' .
               $flags["class_custom_key"] .
-              ' ' .
+              " " .
               $customClass .
               '">';
             $post_html .= $post_item;
-            $post_html .= '</' . $flags["tag_custom_key"] . '>' . PHP_EOL;
+            $post_html .= "</" . $flags["tag_custom_key"] . ">" . PHP_EOL;
             if ($flags["sep_custom"]) {
               $post_html .= $flags["sep_custom"];
             }
           }
           if ($flags["tag_custom_value"]) {
             $post_html .=
-              '<' .
+              "<" .
               $flags["tag_custom_value"] .
               ' class="' .
               $flags["class_custom_value"] .
-              ' ' .
+              " " .
               $customClass .
               '">';
             $post_html .= apply_filters(
@@ -610,15 +620,15 @@ function yapl_shortcode_handler($args, $content = null)
               $customFields[$post_item][0],
               $post_item
             );
-            $post_html .= '</' . $flags["tag_custom_value"] . '>' . PHP_EOL;
+            $post_html .= "</" . $flags["tag_custom_value"] . ">" . PHP_EOL;
           }
           if ($flags["tag_custom_wrap"]) {
-            $post_html .= '</' . $flags["tag_custom_wrap"] . '>';
+            $post_html .= "</" . $flags["tag_custom_wrap"] . ">";
           }
         }
       }
       if ($flags["tag_wrap"]) {
-        $html .= '<' . $flags["tag_wrap"] . ' class="' . $flags["class_wrap"];
+        $html .= "<" . $flags["tag_wrap"] . ' class="' . $flags["class_wrap"];
         if ($flags["category_as_class"]) {
           $categories = get_the_category($post->ID);
           foreach ($categories as $category) {
@@ -629,11 +639,11 @@ function yapl_shortcode_handler($args, $content = null)
       }
       $html .= $post_html;
       if ($flags["tag_wrap"]) {
-        $html .= '</' . $flags["tag_wrap"] . '>';
+        $html .= "</" . $flags["tag_wrap"] . ">";
       }
       if ($flags["tag_menu_item"]) {
         $menu .=
-          '<' .
+          "<" .
           $flags["tag_menu_item"] .
           ' class="' .
           $flags["class_menu_item"] .
@@ -641,41 +651,41 @@ function yapl_shortcode_handler($args, $content = null)
         $menu .=
           '<a href="#' .
           sanitize_title($post->post_title) .
-          '>' .
+          ">" .
           $post->post_title .
-          '</a>';
-        $menu .= '</' . $flags["tag_menu_item"] . '>';
+          "</a>";
+        $menu .= "</" . $flags["tag_menu_item"] . ">";
       }
     }
     if ($flags["tag_menu"]) {
       $menu =
-        '<' .
+        "<" .
         $flags["tag_menu"] .
         ' class="' .
         $flags["class_menu"] .
         '">' .
         $menu .
-        '</' .
+        "</" .
         $flags["tag_menu"] .
-        '>' .
+        ">" .
         PHP_EOL;
     }
     if ($flags["tag_menu_wrap"]) {
       $menu =
-        '<' .
+        "<" .
         $flags["tag_menu_wrap"] .
         ' class="' .
         $flags["class_menu_wrap"] .
         '">' .
         $menu .
-        '</' .
+        "</" .
         $flags["tag_menu_wrap"] .
-        '>' .
+        ">" .
         PHP_EOL;
     }
     if ($flags["link_navigation"]) {
       $html .=
-        '<' .
+        "<" .
         $flags["tag_navigation"] .
         ' class="' .
         $flags["class_navigation"] .
@@ -697,7 +707,7 @@ function yapl_shortcode_handler($args, $content = null)
           $flags["class_link_earlier"] .
           '">' .
           $flags["label_earlier"] .
-          '</a>';
+          "</a>";
       }
       // Check if we have any older news...
       if (count($posts) == $flags["limit"]) {
@@ -711,26 +721,26 @@ function yapl_shortcode_handler($args, $content = null)
           $flags["class_link_older"] .
           '">' .
           $flags["label_older"] .
-          '</a>';
+          "</a>";
       }
-      $html .= '</' . $flags["tag_navigation"] . '>';
+      $html .= "</" . $flags["tag_navigation"] . ">";
     }
     if ($flags["tag_outer_wrap"]) {
       $html =
-        '<' .
+        "<" .
         $flags["tag_outer_wrap"] .
         ' class="' .
         $flags["class_outer_wrap"] .
         '">' .
         $html .
-        '</' .
+        "</" .
         $flags["tag_outer_wrap"] .
-        '>';
+        ">";
     }
     if ($flags["json"]) {
       $result = ["html" => $menu . PHP_EOL . $html];
       return json_encode($result);
-    } elseif ($flags['debug']) {
+    } elseif ($flags["debug"]) {
       return $debug . $menu . PHP_EOL . $html;
     } else {
       return $menu . PHP_EOL . $html;
@@ -748,7 +758,7 @@ function htmlTruncate($html, $maxLength)
   while (
     $printedLength < $maxLength &&
     mb_preg_match(
-      '{</?([a-z]+)[^>]*>|&#?[a-zA-Z0-9]+;}',
+      "{</?([a-z]+)[^>]*>|&#?[a-zA-Z0-9]+;}",
       $html,
       $match,
       PREG_OFFSET_CAPTURE,
@@ -768,21 +778,21 @@ function htmlTruncate($html, $maxLength)
     $out .= $str;
     $printedLength += mb_strlen($str);
 
-    if ($tag[0] == '&') {
+    if ($tag[0] == "&") {
       // Handle the entity.
       $out .= $tag;
       $printedLength++;
     } else {
       // Handle the tag.
       $tagName = $match[1][0];
-      if ($tag[1] == '/') {
+      if ($tag[1] == "/") {
         // This is a closing tag.
 
         $openingTag = array_pop($tags);
         assert($openingTag == $tagName); // check that tags are properly nested.
 
         $out .= $tag;
-      } elseif ($tag[mb_strlen($tag) - 2] == '/') {
+      } elseif ($tag[mb_strlen($tag) - 2] == "/") {
         // Self-closing tag.
         $out .= $tag;
       } else {
@@ -803,7 +813,7 @@ function htmlTruncate($html, $maxLength)
 
   // Close any open tags.
   while (!empty($tags)) {
-    $out .= sprintf('</%s>', array_pop($tags));
+    $out .= sprintf("</%s>", array_pop($tags));
   }
 
   return $out;
@@ -844,6 +854,6 @@ function mb_preg_match(
 
   return $ret;
 }
-add_shortcode('yapl', 'yapl_shortcode_handler');
+add_shortcode("yapl", "yapl_shortcode_handler");
 
 ?>
