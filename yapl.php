@@ -283,8 +283,8 @@ function yapl_shortcode_handler($args, $content = null)
       return json_encode($result);
     }
     // Exit early if we have no found posts
-    if (count($posts) == 0) {
-      // return "";
+    if (count($posts) == 0 && !$flags["debug"]) {
+      return "";
     }
     foreach ($posts as $post) {
       // Skip if post is the current post
