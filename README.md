@@ -195,9 +195,9 @@ The class attributes changes the class for the given field.
   field
 - **class_date_part** (defaults to "yapl-date-") The class for the
   date part used when splitting date into multiple parts (See
-  date*format below) The class have the unit added to the class name.
+  date-format below) The class have the unit added to the class name.
   I.e. using the default value the year will have a class of
-  \_yapl-date-year*
+  _yapl-date-year_
 - **class_content** (defaults to "yapl-content") The class for the
   content field.
 - **class_excerpt** (defaults to "yapl-excerpt") The class for the
@@ -332,6 +332,9 @@ is by default clipped at the normal `<!—more—>` tag. You can use:
   be used. I.e. The split will be applied first and after that the
   max_chars will be checked to see if the text needs be shortened
   further.
+- **max_words** (Not used by default) If set the content will have a
+  maximum length of the number of words set. This is also applied after
+  the _split_point_ (and after the _max_chars_).
 
 ### Formatting dates via the `date_format` attribute
 
