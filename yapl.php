@@ -2,7 +2,7 @@
 /*
 Plugin Name: Y.A.P.L
 Description: Yet Another Post Lister, but bring your own css. This plugin creates a listing of any page type via the shortcode [yapl]. Normal usage is [yapl category="category" display_items="image,title,content"] but there are a lot of attributes you can set. See <a href="https://github.com/hliljegren/yapl">Readme</a> for documentation.
-Version: 0.8.6
+Version: 0.9.0
 Author: Håkan Liljegren
 */
 if (!function_exists("add_action")) {
@@ -40,6 +40,7 @@ function yapl_shortcode_handler($args, $content = null)
     "class_date" => "yapl-date",
     "class_date_part" => "yapl-date-",
     "class_content" => "yapl-content",
+    "class_excerpt" => "yapl-excerpt",
     "class_categories" => "yapl-categories",
     "class_categories_wrap" => "yapl-categories-wrap",
     "class_tags" => "yapl-tags",
@@ -63,6 +64,7 @@ function yapl_shortcode_handler($args, $content = null)
     "tag_date_part" => "span",
     "tag_author" => "span",
     "tag_content" => "div",
+    "tag_excerpt" => "div",
     "tag_categories" => "span",
     "tag_categories_wrap" => false,
     "tag_tags" => "span",
@@ -89,9 +91,9 @@ function yapl_shortcode_handler($args, $content = null)
     "label_comments" => "%1 comments",
     "label_earlier" => "Earlier News",
     "label_older" => "Older News",
+    "filter_content" => true,
     "create_menu" => false,
     "image_size" => false,
-    "filter_content" => true,
     "date_format" => false,
     "max_chars" => false,
     "max_words" => false,
@@ -255,7 +257,14 @@ function yapl_shortcode_handler($args, $content = null)
       }
     }
   }
-
+  if ($flags["debug"]) {
+    $debug .= "Using query args:<pre>";
+    $debug .= print_r($query_args, true);
+    $debug .= "</pre>";
+    if ($flags["debug"] == "noquery") {
+      return $debug;
+    }
+  }
   /* Run query */
   if ($flags["template_file"]) {
     $templateFile =
@@ -270,11 +279,6 @@ function yapl_shortcode_handler($args, $content = null)
   } else {
     $html = "";
     $menu = "";
-    if ($flags["debug"]) {
-      $debug .= "Using query args:<pre>";
-      $debug .= print_r($query_args, true);
-      $debug .= "</pre>";
-    }
     $posts = get_posts($query_args);
     $debug .= "<pre>Posts fetched!" . print_r($posts, true) . "</pre>";
 
@@ -434,24 +438,36 @@ function yapl_shortcode_handler($args, $content = null)
             $flags["class_content"] .
             '">' .
             PHP_EOL;
-          $content = $post->post_content;
+          $post_content = $post->post_content;
           if ($flags["split_more"]) {
-            $splitContent = explode($flags["split_point"], $content);
-            $content = $splitContent[0];
+            $splitContent = explode($flags["split_point"], $post_content);
+            $post_content = $splitContent[0];
           }
           if (
             $flags["max_chars"] &&
-            mb_strlen(wp_strip_all_tags($content)) > $flags["max_chars"]
+            mb_strlen(wp_strip_all_tags($post_content)) > $flags["max_chars"]
           ) {
-            $content = htmlTruncate($content, $flags["max_chars"]) . "…";
+            $post_content =
+              htmlTruncate($post_content, $flags["max_chars"]) . "…";
           }
           if ($flags["max_words"]) {
-            $content = wp_trim_words($content, $flags["max_words"]) . "…";
+            $post_content =
+              wp_trim_words($post_content, $flags["max_words"]) . "…";
           }
+          // Can't apply the_content filter if not global post object is set!
+          // But we can call the base filters!
           if ($flags["filter_content"]) {
-            $post_html .= apply_filters("the_content", $content);
+            $post_content = wptexturize($post_content);
+            $post_content = convert_smilies($post_content);
+            $post_content = convert_chars($post_content);
+            $post_content = wpautop($post_content);
+            $post_content = shortcode_unautop($post_content);
+            $post_content = prepend_attachment($post_content);
+            // Running do_shortcode can cause a loop so we don't do that here!
+            $post_html .= $post_content;
+            $debug .= "<p>Content filtered!</p>";
           } else {
-            $post_html .= $content;
+            $post_html .= $post_content;
           }
           $post_html .= PHP_EOL . "</" . $flags["tag_content"] . ">" . PHP_EOL;
         }
@@ -577,6 +593,19 @@ function yapl_shortcode_handler($args, $content = null)
               $post_html .= "</" . $flags["tag_tags_wrap"] . ">";
             }
           }
+        }
+        if ($post_item == "excerpt") {
+          $post_html .=
+            "<" .
+            $flags["tag_excerpt"] .
+            ' class="' .
+            $flags["class_excerpt"] .
+            '">' .
+            get_the_excerpt($post->ID) .
+            "</" .
+            $flags["tag_excerpt"] .
+            ">" .
+            PHP_EOL;
         }
         if (array_key_exists($post_item, $customFields)) {
           // Custom field
@@ -746,7 +775,9 @@ function yapl_shortcode_handler($args, $content = null)
       return $menu . PHP_EOL . $html;
     }
   }
+  return "Hello World!";
 }
+
 function htmlTruncate($html, $maxLength)
 {
   mb_internal_encoding("UTF-8");
