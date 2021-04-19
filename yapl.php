@@ -2,7 +2,7 @@
 /*
 Plugin Name: Y.A.P.L
 Description: Yet Another Post Lister, but bring your own css. This plugin creates a listing of any page type via the shortcode [yapl]. Normal usage is [yapl category="category" display_items="image,title,content"] but there are a lot of attributes you can set. See <a href="https://github.com/hliljegren/yapl">Readme</a> for documentation.
-Version: 0.9.0
+Version: 0.9.1
 Author: Håkan Liljegren
 */
 if (!function_exists("add_action")) {
@@ -62,7 +62,7 @@ function yapl_shortcode_handler($args, $content = null)
     "tag_title" => "h2",
     "tag_date" => "span",
     "tag_date_part" => "span",
-    "tag_author" => "span",
+    "tag_author" => "a",
     "tag_content" => "div",
     "tag_excerpt" => "div",
     "tag_categories" => "span",
@@ -423,6 +423,13 @@ function yapl_shortcode_handler($args, $content = null)
             $flags["tag_author"] .
             ' class="' .
             $flags["class_author"] .
+            '" ';
+          if ($flags["tag_author"] == "a") {
+            // We have an anchor tag so we should add a link to the author's posts page
+            $author_link = get_author_posts_url($post->post_author);
+            $post_html .= 'href="' . $author_link . '"';
+          }
+          $post_html .=
             '">' .
             get_the_author_meta("user_nicename", $post->post_author) .
             "</" .

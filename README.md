@@ -166,8 +166,8 @@ The following can be used as value for the display_items attribute:
 - **image** Displays the post thumbnail (See the _image_size_ attribute if a specific size
   is needed)
 - **date** Displays the post date (See the _date_format_ attribute on how to format the date)
-- **author** Displays the author of the post. Note! At the moment the author is just displayed
-  and is not linked to the author's archive page.
+- **author** Displays the author of the post. By default the _tag_author_ is set to 'a' to display
+  an anchor to the authors posts page, but by changing the _tag_author_ to something else (like a 'span') will also remove the href attribute.
 - **content** Displays the content of the post. The content is by default trucated via the
   read-more block, but, can aslo be truncated via _max_chars_ and _max_words_ attribute. There is also a _filter_content_ attribute (true by default) that applies the normal content filters on
   the content. **Note** To prevent possible infinite loops any shortcodes in the content will **not** be parsed.
