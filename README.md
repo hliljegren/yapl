@@ -95,7 +95,7 @@ If you want your content to have a class of "meow-text" you add
 
 ## Full attribute list
 
-### Filtering and display attributes
+### Filtering attributes
 
 The filtering attribute are used to filter out the wanted posts.
 
@@ -158,6 +158,33 @@ The filtering attribute are used to filter out the wanted posts.
   will find all posts with a meta key "price" that is between 20 and 40. It is possible to mix between the
   two different variants. E.g. The following is valid `meta="booktype=paperback,price|BETWEEN|20|40"`
 
+### Possible display_items values
+
+The following can be used as value for the display_items attribute:
+
+- **title** Displays the post title
+- **image** Displays the post thumbnail (See the _image_size_ attribute if a specific size
+  is needed)
+- **date** Displays the post date (See the _date_format_ attribute on how to format the date)
+- **author** Displays the author of the post. Note! At the moment the author is just displayed
+  and is not linked to the author's archive page.
+- **content** Displays the content of the post. The content is by default trucated via the
+  read-more block, but, can aslo be truncated via _max_chars_ and _max_words_ attribute. There is also a _filter_content_ attribute (true by default) that applies the normal content filters on
+  the content. **Note** To prevent possible infinite loops any shortcodes in the content will **not** be parsed.
+- **excerpt** Displays the excerpt for the post. This actually calls the WordPress built-in
+  function to generate the excerpt. I.e. If you have no specific excerpt WordPress will generate one from the content
+- **readmore** Generates a link to the post with the text from the _label_readmore_ as the link
+  text.
+- **comment_count** Shows the number of comments for the post. The comment count is displayed via the
+  _label_comment_ and _label_comments_ attributes.
+- **categories** Displays the post categories. The categories will be prepended with the text in
+  the attribute _label_categories_ and each category will be separated with the _sep_categories_
+  attribute.
+- **tags** Displays all tags associated to the post. The tags will be prepended with the text in
+  the attribute _label_tags_ and each tag will be separated with the _sep_tags_ attribute.
+- **(custom-field)** Displays a named custom field (post-meta) for the post. I.e. if the post
+  has a custom field named _cost_ you can show that by adding _cost_ to the display*items. By default both the key and the value for the custom field is displayed. You can set the attributes \_tag_custom_value* or _tag_custom_key_ to _false_ if you want to disable any of them.
+
 ### Class attributes
 
 The class attributes changes the class for the given field.
@@ -173,6 +200,8 @@ The class attributes changes the class for the given field.
   \_yapl-date-year*
 - **class_content** (defaults to "yapl-content") The class for the
   content field.
+- **class_excerpt** (defaults to "yapl-excerpt") The class for the
+  excerpt field
 - **class_categories** (defaults to "yapl-categories") the class for
   each category item
 - **class_categories_wrap** (defaults to "yapl-categories-wrap") The
@@ -215,6 +244,7 @@ wrapper
 - **tag_date_part** (defaults to span) The tag for the date_part.
 - **tag_author** (defaults to span) The tag for the author.
 - **tag_content** (defaults to div) The tag for the content.
+- **tag_excerpt** (dafaults to div) The tag for the excerpt.
 - **tag_categories** (defaults to span) The tag for the categories.
 - **tag_categories_wrap** (defaults to false) The tag for the
   categories_wrap.
