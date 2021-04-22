@@ -102,6 +102,9 @@ The filtering attribute are used to filter out the wanted posts.
 - **type** (defaults to post) the post type to query. Can be used to
   query custom post type. E.g. `type="books"`. Multiple post types can
   be supplied in a comma-separated list. E.g. `type="post,book,author"`
+  There is a special "type" that you can use and that is _subpages_. This will
+  create a list of all posts that have the current post as its parent. For this to
+  work you need to have a type that is hierarchical like pages.
 - **display_items** (defaults to "title,author,date,image,content")
   The fields to display for each post. The fields will be in the same order as
   listed in the attribute. If your posts contains post meta you can add them
