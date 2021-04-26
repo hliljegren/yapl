@@ -2,7 +2,7 @@
 /*
 Plugin Name: Y.A.P.L
 Description: Yet Another Post Lister, but bring your own css. This plugin creates a listing of any page type via the shortcode [yapl]. Normal usage is [yapl category="category" display_items="image,title,content"] but there are a lot of attributes you can set. See <a href="https://github.com/hliljegren/yapl">Readme</a> for documentation.
-Version: 0.9.1
+Version: 0.9.2
 Author: Håkan Liljegren
 */
 if (!function_exists("add_action")) {
@@ -671,6 +671,9 @@ function yapl_shortcode_handler($args, $content = null)
             $html .= " " . $category->slug;
           }
         }
+        if ($is_current) {
+          $html .= " is-current";
+        }
         $html .= '" id="' . $post->post_name . '">';
       }
       $html .= $post_html;
@@ -782,7 +785,8 @@ function yapl_shortcode_handler($args, $content = null)
       return $menu . PHP_EOL . $html;
     }
   }
-  return "Hello World!";
+  // We should never reach this!
+  return "Hello from YAPL! This was never ment to happen, but for some unknown reasons in the now known universe it still did!";
 }
 
 function htmlTruncate($html, $maxLength)
