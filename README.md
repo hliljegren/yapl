@@ -155,7 +155,7 @@ The filtering attribute are used to filter out the wanted posts.
   post and call the get_template_part() function with the supplied file name.
 - **meta** (Defaults to none) Can be used to filter posts with specified meta values.
   The `meta` attribute is a comma-separated list where each part can be used in two ways.
-  `"metakey=metavalue"` or `metakey|metacompare|metavalue`. If the latest version is used you
+  `"metakey=metavalue"` or `metakey|metacompare|metavalue`. If the last version is used you
   can specify how the meta should compare the value. See [wp_query meta](https://developer.wordpress.org/reference/classes/wp_query/#custom-field-post-meta-parameters) for a full description of possible compare
   values. _Note_ values that requires two values need four values. E.g. `meta="price|BETWEEN|20|40"`
   will find all posts with a meta key "price" that is between 20 and 40. It is possible to mix between the
