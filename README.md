@@ -71,7 +71,7 @@ enclosed in it's own HTML tag so if we have the following short-code:
 
 You will get the following structure
 
-     <div class"cat-list">
+     <section class"cat-list">
     	  <article class="cat"
     			<span class="yapl-image"><img src="…">
     			<h2 class="yapl-title">
@@ -108,7 +108,7 @@ The filtering attribute are used to filter out the wanted posts.
 - **display_items** (defaults to "title,author,date,image,content")
   The fields to display for each post. The fields will be in the same order as
   listed in the attribute. If your posts contains post meta you can add them
-  as normal field, but they will be displayed as `key : value`. You can control
+  as normal fields, but they will be displayed as `key : value`. You can control
   both the separator char and the key and or value via the `tag_custom_value` and
   `tag_custom_key` (See below).
 - **author** (defaults to none) A list of the authors you want to
@@ -256,7 +256,7 @@ wrapper
 - **tag_categories_wrap** (defaults to false) The tag for the
   categories_wrap.
 - **tag_tags** (defaults to span) The tag for the tags.
-- **tag_outer_wrap** (defaults to div) The tag for the outer_wrap.
+- **tag_outer_wrap** (defaults to section) The tag for the outer_wrap.
 - **tag_tags_wrap** (defaults to false) The tag for the tags_wrap.
 - **tag_wrap** (defaults to article) The tag for the wrap.
 - **tag_image** (defaults to span) The tag for the image.
