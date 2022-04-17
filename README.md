@@ -129,6 +129,10 @@ The filtering attribute are used to filter out the wanted posts.
   I.e. will list posts that doesn't belong to the given category. If
   more than one category is given the posts shown will not belong to
   any of the given categories.
+- **taxonomy** (defaults to false). Lets you change to a custom taxonomy. Needs
+  to be used together with *category*. E.g. if you have a custom taxonomy with
+  slug `mytaxonomy` that can have a value of `myvalue` you can set up your listing
+  via: `[yapl taxonomy="mytaxonomy" category="myvalue" … ]`
 - **post_id** (defaults to empty) If you list one or more
   post_id's only those posts will be listed
 - **limit** (defaults to WordPress standard) The number of posts you

@@ -2,7 +2,7 @@
 /*
 Plugin Name: Y.A.P.L
 Description: Yet Another Post Lister, but bring your own css. This plugin creates a listing of any page type via the shortcode [yapl]. Normal usage is [yapl category="category" display_items="image,title,content"] but there are a lot of attributes you can set. See <a href="https://github.com/hliljegren/yapl">Readme</a> for documentation.
-Version: 0.9.2
+Version: 0.11.1
 Author: Håkan Liljegren
 */
 if (!function_exists("add_action")) {
@@ -20,6 +20,7 @@ function yapl_shortcode_handler($args, $content = null)
     "category_join" => "or",
     "author" => false,
     "not_in_category" => false,
+    "taxonomy" => false,
     "post_id" => false,
     "meta" => false,
     "link_title" => true,
@@ -68,7 +69,7 @@ function yapl_shortcode_handler($args, $content = null)
     "tag_categories" => "span",
     "tag_categories_wrap" => false,
     "tag_tags" => "span",
-    "tag_outer_wrap" => "div",
+    "tag_outer_wrap" => "section",
     "tag_tags_wrap" => false,
     "tag_wrap" => "article",
     "tag_image" => "span",
@@ -143,6 +144,11 @@ function yapl_shortcode_handler($args, $content = null)
   }
   if ($flags["category"]) {
     $categories = explode(",", $flags["category"]);
+    if ($flags["taxonomy"]) {
+      $taxonomy = $flags['taxonomy'];
+    } else {
+      $taxonomy = "category";
+    }
     foreach ($categories as $category) {
       if ($category == "_post_") {
         $post_cat = get_the_terms($current_id, "category");
@@ -158,13 +164,13 @@ function yapl_shortcode_handler($args, $content = null)
         }
       } elseif (is_numeric($category)) {
         $query_args["tax_query"][] = [
-          "taxonomy" => "category",
+          "taxonomy" => $taxonomy,
           "field" => "id",
           "terms" => $category,
         ];
       } else {
         $query_args["tax_query"][] = [
-          "taxonomy" => "category",
+          "taxonomy" => $taxonomy,
           "field" => "slug",
           "terms" => $category,
         ];
@@ -186,14 +192,14 @@ function yapl_shortcode_handler($args, $content = null)
     foreach ($categories as $category) {
       if (is_numeric($category)) {
         $query_args["tax_query"][] = [
-          "taxonomy" => "category",
+          "taxonomy" => $taxonomy,
           "field" => "id",
           "terms" => $category,
           "operator" => "NOT IN",
         ];
       } else {
         $query_args["tax_query"][] = [
-          "taxonomy" => "category",
+          "taxonomy" => $taxonomy,
           "field" => "slug",
           "terms" => $category,
           "operator" => "NOT IN",
@@ -331,15 +337,20 @@ function yapl_shortcode_handler($args, $content = null)
           if ($flags["link_image"]) {
             $post_html .= '<a href="' . get_permalink($post->ID) . '">';
           }
+          $img = "";
           if ($flags["image_size"]) {
             $sizes = explode("x", strtolower($flags["image_size"]));
             if (count($sizes) == 2) {
               $post_html .= get_the_post_thumbnail($post->ID, $sizes);
             } else {
-              $post_html .= get_the_post_thumbnail($post->ID);
+              $img = get_the_post_thumbnail($post->ID);
             }
           } else {
-            $post_html .= get_the_post_thumbnail($post->ID);
+            $img = get_the_post_thumbnail($post->ID);
+          }
+          if (strlen($img) > 0) {
+            // Clean Wordpress inline css settings
+            $post_html .= preg_replace( '/style="[^"]+"\s/', "", $img );
           }
           if ($flags["link_image"]) {
             $post_html .= "</a>";
@@ -690,7 +701,7 @@ function yapl_shortcode_handler($args, $content = null)
         $menu .=
           '<a href="#' .
           sanitize_title($post->post_title) .
-          ">" .
+          '">' .
           $post->post_title .
           "</a>";
         $menu .= "</" . $flags["tag_menu_item"] . ">";
