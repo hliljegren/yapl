@@ -2,7 +2,7 @@
 /*
 Plugin Name: Y.A.P.L
 Description: Yet Another Post Lister, but bring your own css. This plugin creates a listing of any page type via the shortcode [yapl]. Normal usage is [yapl category="category" display_items="image,title,content"] but there are a lot of attributes you can set. See <a href="https://github.com/hliljegren/yapl">Readme</a> for documentation.
-Version: 0.11.1
+Version: 0.12.0
 Author: Håkan Liljegren
 */
 if (!function_exists("add_action")) {
@@ -54,6 +54,7 @@ function yapl_shortcode_handler($args, $content = null)
     "class_custom_key" => "yapl-custom-key",
     "class_custom_wrap" => "yapl-custom-wrap",
     "class_outer_wrap" => "yapl-outer-wrap",
+    "class_extra_wrap" => "yapl-extra-wrap",
     "class_menu_item" => "yapl-menu-item",
     "class_menu" => "yapl-menu",
     "class_menu_wrap" => "yapl-menu-wrap",
@@ -70,6 +71,7 @@ function yapl_shortcode_handler($args, $content = null)
     "tag_categories_wrap" => false,
     "tag_tags" => "span",
     "tag_outer_wrap" => "section",
+    "tag_extra_wrap" => false,
     "tag_tags_wrap" => false,
     "tag_wrap" => "article",
     "tag_image" => "span",
@@ -700,7 +702,7 @@ function yapl_shortcode_handler($args, $content = null)
           '">';
         $menu .=
           '<a href="#' .
-          sanitize_title($post->post_title) .
+            $post->post_name .
           '">' .
           $post->post_title .
           "</a>";
@@ -787,13 +789,20 @@ function yapl_shortcode_handler($args, $content = null)
         $flags["tag_outer_wrap"] .
         ">";
     }
+    $extra_open = "";
+    $extra_close = "";
+    if ($flags["tag_extra_wrap"]) {
+      $extra_open = "<" . $flags["tag_extra_wrap"] .
+        ' class="' . $flags["class_extra_wrap"] . '">';
+      $extra_close = "</" . $flags["tag_extra_wrap"] . ">";
+    }
     if ($flags["json"]) {
       $result = ["html" => $menu . PHP_EOL . $html];
       return json_encode($result);
     } elseif ($flags["debug"]) {
-      return $debug . $menu . PHP_EOL . $html;
+      return $debug . $extra_open . $menu . PHP_EOL . $html . $extra_close;
     } else {
-      return $menu . PHP_EOL . $html;
+      return $extra_open . $menu . PHP_EOL . $html . $extra_close;
     }
   }
   // We should never reach this!
