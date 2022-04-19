@@ -113,8 +113,8 @@ The filtering attribute are used to filter out the wanted posts.
   `tag_custom_key` (See below).
   If you want an inner wrap for some of your display items you can wrap them in
   `{`and `}`. E.g if you have `display_items="image,{title,exerpt,readmore}"`
-  The title, exerpt and readmore lements will be wrapped in an inner wrapper
-  element. The tag and class for that element is controled via `tag_inner_wrap`
+  The title, exerpt and readmore elements will be wrapped in an inner wrapper
+  element. The tag and class for that element is controlled via `tag_inner_wrap`
   and `class_inner_wrap`.
 - **author** (defaults to none) A list of the authors you want to
   display posts from. Can be either author id or author name. the list
