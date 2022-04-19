@@ -111,6 +111,11 @@ The filtering attribute are used to filter out the wanted posts.
   as normal fields, but they will be displayed as `key : value`. You can control
   both the separator char and the key and or value via the `tag_custom_value` and
   `tag_custom_key` (See below).
+  If you want an inner wrap for some of your display items you can wrap them in
+  `{`and `}`. E.g if you have `display_items="image,{title,exerpt,readmore}"`
+  The title, exerpt and readmore lements will be wrapped in an inner wrapper
+  element. The tag and class for that element is controled via `tag_inner_wrap`
+  and `class_inner_wrap`.
 - **author** (defaults to none) A list of the authors you want to
   display posts from. Can be either author id or author name. the list
   is separated by comma.
@@ -221,6 +226,8 @@ The class attributes changes the class for the given field.
   wrapper.
 - **class_outer_wrap** (defaults to "yapl-outer-wrap") The class for
   the outer wrapper.
+  **class_inner_wrap** (defaults to yapl-inner-wrap) The class for the
+  inner wrap if used (see *display_items* for more info)
 - **class_image** (defaults to "yapl-image") The class for the image
   wrapper
 - **class_readmore** (defaults to "yapl-readmore". The class for the
@@ -257,6 +264,11 @@ wrapper
   categories_wrap.
 - **tag_tags** (defaults to span) The tag for the tags.
 - **tag_outer_wrap** (defaults to section) The tag for the outer_wrap.
+- **tag_inner_wrap** (defaults to div) the tag used for the inner_wrap.
+- **tag_extra_wrap** (defaults to false) the tag used for the extra wrap. If set
+  to anything else than false an extra wrapper will be added to enclose all
+  content that is outputted. This can be useful for creating CSS-only sliders as
+  an eventual menu **and** all listed posts will be enclosed in an element.
 - **tag_tags_wrap** (defaults to false) The tag for the tags_wrap.
 - **tag_wrap** (defaults to article) The tag for the wrap.
 - **tag_image** (defaults to span) The tag for the image.

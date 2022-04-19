@@ -2,7 +2,7 @@
 /*
 Plugin Name: Y.A.P.L
 Description: Yet Another Post Lister, but bring your own css. This plugin creates a listing of any page type via the shortcode [yapl]. Normal usage is [yapl category="category" display_items="image,title,content"] but there are a lot of attributes you can set. See <a href="https://github.com/hliljegren/yapl">Readme</a> for documentation.
-Version: 0.12.0
+Version: 0.13.0
 Author: Håkan Liljegren
 */
 if (!function_exists("add_action")) {
@@ -55,6 +55,7 @@ function yapl_shortcode_handler($args, $content = null)
     "class_custom_wrap" => "yapl-custom-wrap",
     "class_outer_wrap" => "yapl-outer-wrap",
     "class_extra_wrap" => "yapl-extra-wrap",
+    "class_inner_wrap" => "yapl_inner_wrap",
     "class_menu_item" => "yapl-menu-item",
     "class_menu" => "yapl-menu",
     "class_menu_wrap" => "yapl-menu-wrap",
@@ -72,6 +73,7 @@ function yapl_shortcode_handler($args, $content = null)
     "tag_tags" => "span",
     "tag_outer_wrap" => "section",
     "tag_extra_wrap" => false,
+    "tag_inner_wrap" => "div",
     "tag_tags_wrap" => false,
     "tag_wrap" => "article",
     "tag_image" => "span",
@@ -313,6 +315,20 @@ function yapl_shortcode_handler($args, $content = null)
       }
 
       foreach ($displayItems as $post_item) {
+        if (str_starts_with($post_item, "{")) {
+          $post_html .= "<" .
+            $flags["tag_inner_wrap"] .
+            ' class="' .
+            $flags["class_inner_wrap"] .
+            '">';
+          $post_item = substr($post_item, 1);
+        }
+        if (str_ends_with($post_item, "}")) {
+          $close_inner_wrap = true;
+          $post_item = substr($post_item, 0, -1);
+        } else {
+          $close_inner_wrap = false;
+        }
         if ($post_item == "title") {
           $post_html .=
             "<" .
@@ -674,6 +690,9 @@ function yapl_shortcode_handler($args, $content = null)
           if ($flags["tag_custom_wrap"]) {
             $post_html .= "</" . $flags["tag_custom_wrap"] . ">";
           }
+        }
+        if ($close_inner_wrap) {
+          $post_item .= "</" . $flags["tag_inner_wrap"] . ">";
         }
       }
       if ($flags["tag_wrap"]) {
